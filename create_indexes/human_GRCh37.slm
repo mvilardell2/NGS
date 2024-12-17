@@ -1,0 +1,32 @@
+#!/bin/bash
+
+##SBATCH --job-name=GRCh37_index
+##SBATCH --time=05:00:00
+##SBATCH --output=%x_%j.log 
+##SBATCH --mem=64G
+##SBATCH --cpus-per-task=8
+
+
+# Download Genome references; GTF and FASTA files
+# get latest ENSEMBL realease (ENSEMBLE = release-113; Gencode = v87)
+
+wget https://ftp.ensembl.org/pub/grch37/release-113/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.gtf.gz
+
+wget https://ftp.ensembl.org/pub/grch37/release-113/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.dna_sm.primary_assembly.fa.gz
+
+
+genomeDir="/DATA/Reference/ENSEMBL/human/GRCh37"
+
+
+# Run STAR index command
+STAR --runMode genomeGenerate --genomeDir ${genomeDir} --genomeFastaFiles  ${genomeDir}/Homo_sapiens.GRCh37.dna_sm.primary_assembly.fa --sjdbGTFfile  ${genomeDir}/Homo_sapiens.GRCh37.87.gtf --runThreadN 10
+
+# Run bowtie2 index command
+bowtie2-build ${genomeDir}/Homo_sapiens.GRCh37.dna_sm.primary_assembly.fa ${genomeDir}/bowtie2_indexe/GRCh37
+
+
+# Run BWA index command
+bwa index ${genomeDir}/Homo_sapiens.GRCh37.dna_sm.primary_assembly.fa 
+
+
+

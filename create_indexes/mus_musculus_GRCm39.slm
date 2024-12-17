@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#SBATCH --job-name=GRCm39_index
+#SBATCH --time=05:00:00
+#SBATCH --output=%x_%j.log 
+#SBATCH --mem=64G
+#SBATCH --cpus-per-task=8
+
+# Download Genome references; GTF and FASTA files
+wget https://ftp.ensembl.org/pub/current_fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna_sm.primary_assembly.fa.gz
+wget https://ftp.ensembl.org/pub/current_gtf/mus_musculus/Mus_musculus.GRCm39.113.gtf.gz
+
+
+genomeDir="/DATA/Reference/ENSEMBL/mus_musculus/GRCm39"
+
+# Run STAR command 
+STAR --runMode genomeGenerate --genomeDir ${genomeDir}/star --genomeFastaFiles  ${genomeDir}/Mus_musculus.GRCm39.dna_sm.primary_assembly.fa --sjdbGTFfile  ${genomeDir}/Mus_musculus.GRCm39.113.gtf --runThreadN 10
+
+# Run bowtie2 command 
+bowtie2-build ${genomeDir}/Mus_musculus.GRCm39.dna_sm.primary_assembly.fa ${genomeDir}/bowtie2_index/GRCm39 
+
+# Run BWA index command
+bwa index ${genomeDir}/Mus_musculus.GRCm39.dna_sm.primary_assembly.fa 
+
