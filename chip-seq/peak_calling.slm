@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#SBATCH --job-name=peak_calling
+#SBATCH --output=logs/peak_calling_ko2_%j.log
+#SBATCH --error=logs/peak_calling_ko2_%j.err
+#SBATCH --time=01:00:00
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=8GB 
+
+
+module load MACS2
+
+macs2 callpeak -t results/alignment/ko_sample2_chip_final.bam \
+    -c results/alignment/ko_sample2_input_final.bam \
+    -f BAM -g mm \
+    -n ko_sample2 \
+    --outdir results/macs2 
+
+echo Job Finised at: `date +"%T %a %d %b %Y"`

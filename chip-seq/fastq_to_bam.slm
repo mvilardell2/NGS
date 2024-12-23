@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#SBATCH --job-name=fastq_to_bam
+#SBATCH -o logs/%J.%a.out
+#SBATCH -e logs/%J.%a.err
+#SBATCH --array=0-7   # Array range for your files
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=6G
+#SBATCH --time=04:00:00
+
+# Load modules
+module load bowtie2
+module load samtools-1.12-gcc-11.2.0-n7fo7p2
+module load sambamba
+module load FastQC
+
+# Specify bowtie2 index
+genomeDir="/ijc/PUBLIC/DATA/Reference/ENSEMBL/mus_musculus/GRCm38/bowtie2_index"
+
+# set up output filenames and locations
+fastqc_out=results/fastqc
+bowtie_results=results/alignment
+
+
+# List all input files (.fastq.gz)
+file_list=($(ls data/*.fastq.gz))
+
+# Get the input file for this task
+fq=${file_list[$SLURM_ARRAY_TASK_ID]}
+sample=$(basename $fq .fastq.gz)
+
+
+## set up file names
+align_sam=results/alignment/${sample}.sam
+align_bam=results/alignment/${sample}.bam
+align_sorted=results/alignment/${sample}_sorted.bam
+align_final=results/alignment/${sample}_final.bam
+
+
+
+########  FASTQC ##########
+
+echo "FastQC analysis of $sample"
+fastqc $fq -o $fastqc_out
+
+
+
+###### ALIGNMENT ########
+
+echo "Bowtie2 alignment of $sample"
+
+# Run bowtie2
+bowtie2 -p 2 -q --local \
+-x ${genomeDir}/GRCm38 \
+-U $fq \
+-S $align_sam
+
+# Transform SAM to BAM
+samtools view -h -S -b -o $align_bam $align_sam
+
+# Sort BAM file
+samtools sort $align_bam -o $align_sorted
+
+
+
+####### FILTERING ########
+
+echo "Filtering $sample BAM file"
+sambamba view -h -f bam -F "[XS] == null and not unmapped " $align_sorted > $align_final
+
+# Create indices for all the bam files for visualization and QC
+samtools index $align_final
+
+
+echo "The analysis for $sample is done!"
+echo Job Finised at: `date +"%T %a %d %b %Y"`
+
+
+

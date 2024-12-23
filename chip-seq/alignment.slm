@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#SBATCH --job-name=bowtie_alignment
+#SBATCH --output=bowtie_alignment_%j.log
+#SBATCH --error=bowtie_alignment_%j.err
+#SBATCH --time=02:00:00
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=5GB 
+
+# Load modules
+module load bowtie2
+module load samtools-1.12-gcc-11.2.0-n7fo7p2
+
+
+# Specify bowtie2 index
+genomeDir="/ijc/PUBLIC/DATA/Reference/ENSEMBL/mus_musculus/GRCm38/bowtie2_index"
+
+
+# Run bowtie2
+bowtie2 -p 2 -q --local \
+-x ${genomeDir}/GRCm38 \
+-U data/wt_sample1_chip.fastq.gz \
+-S results/alignment/wt_sample1_input.sam
+
+# Transform SAM to BAM
+samtools view -h -S -b -o results/alignment/wt_sample1_input.bam results/alignment/wt_sample1_input.sam
+
+# Sort BAM file
+samtools sort results/alignment/wt_sample1_input.bam -o results/alignment/wt_sample1_input_sorted.bam
+
+echo Job Finised at: `date +"%T %a %d %b %Y"`
+
+
+
+ 

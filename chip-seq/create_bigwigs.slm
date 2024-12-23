@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#SBATCH --job-name=bamCoverage
+#SBATCH --output=bamCoverage_%j.log
+#SBATCH --error=bamCoverage_%j.err
+#SBATCH --time=1:00:00               # Max run time (hh:mm:ss)
+#SBATCH --ntasks=1                   # Number of tasks (processes)
+#SBATCH --cpus-per-task=2            # Number of CPU cores per task
+#SBATCH --mem=3G                    # Total memory required
+
+
+# Load modules
+module load samtools-1.12-gcc-11.2.0-n7fo7p2 
+module load deepTools/3.3.1-foss-2021b-Python-3.8.5
+
+# Create an index BAM file
+samtools index results/alignment/wt_sample2_chip_final.bam
+
+# Create BigWig files
+bamCoverage -b results/alignment/wt_sample2_chip_final.bam -o results/visualization/wt_sample2_chip.bw --binSize 20 
+
+echo Job Finised at: `date +"%T %a %d %b %Y"`
+
