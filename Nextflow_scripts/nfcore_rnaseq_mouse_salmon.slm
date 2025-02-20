@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#SBATCH --job-name=rnaseq_mouse
+#SBATCH --output=rnaseq_mouse_%j.log
+#SBATCH --error=rnaseq_mouse_%j.err
+#SBATCH --time=1-00:00:00               
+#SBATCH --cpus-per-task=32             
+#SBATCH --mem=80G           
+
+
+# Pipeline version -r 3.14.0
+
+# run the older nextflow version (v24 has a bug with mounting singulariy /home)
+#NXF_VER=23.10.0 nextflow run hello
+
+nextflow run hello
+
+nextflow run nf-core/rnaseq  -r 3.14.0 -profile singularity --outdir results --pseudo_aligner salmon --skip_alignment --gtf /mnt/beegfs/mvilardell/References/ENSEMBL/m39/Mus_musculus.GRCm39.113.gtf.gz --fasta /mnt/beegfs/mvilardell/References/ENSEMBL/m39/Mus_musculus.GRCm39.dna_sm.primary_assembly.fa.gz --input /mnt/beegfs/mvilardell/rnaseq_mouse/AITL2_samplesheet.csv --max-mem '80.GB' -resume |tee -a nfcore_rnaseq.log 
