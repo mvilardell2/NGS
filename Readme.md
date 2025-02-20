@@ -11,5 +11,5 @@ This repository contains scripts and workflows for various genomic data processi
 
 - fastq_download_sra: This folder contains scripts for downloading sequencing data from public databases. 
 
-
+- Nextflow_scripts: Contains scripts for running nextflow pipelines.
 
